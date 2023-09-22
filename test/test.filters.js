@@ -44,8 +44,15 @@ describe('Twig.js Filters ->', function () {
             const testTemplate = twig({data: '{{ {"a":[1,"b",3]}|json_encode }}'});
             testTemplate.render().should.equal('{"a":[1,"b",3]}');
         });
+        it('should encode Maps to json', function () {
+            const testTemplate = twig({data: '{{ test|json_encode }}'});
+            testTemplate.render({ test: new Map([["a", [1,"b",3]]]) }).should.equal('{"a":[1,"b",3]}');
+        });
         it('should retain key order in an object', function () {
             twig({data: '{{ { "foo": 1, "bar": 2, "baz": 3 }|json_encode }}'}).render().should.equal('{"foo":1,"bar":2,"baz":3}');
+        });
+        it('should retain key order in a Map', function () {
+            twig({data: '{{ test|json_encode }}'}).render({ test: new Map([['foo',1],[2,'bar'],['baz',3]]) }).should.equal('{"foo":1,2:"bar","baz":3}');
         });
         it('should not add additional information to objects', function () {
             twig({data: '{{ { "foo": 1, "bar": [1, 2, 3], "baz": { "a": "a", "b": "b" } }|json_encode }}'}).render().should.equal('{"foo":1,"bar":[1,2,3],"baz":{"a":"a","b":"b"}}');
@@ -182,6 +189,13 @@ describe('Twig.js Filters ->', function () {
             testTemplate = twig({data: '{{ {"0":"a", "1":"b", "2":"c"}|keys }}'});
             testTemplate.render().should.equal('0,1,2');
         });
+        it('should return the keys of a Map', function () {
+            let testTemplate = twig({data: '{{ test|keys }}'});
+            testTemplate.render({ test: new Map([['a', 1],['b', 4],['c', 3]]) }).should.equal('a,b,c');
+
+            testTemplate = twig({data: '{{ test|keys }}'});
+            testTemplate.render({ test: new Map([[0, 'a'],[1, 'b'],[2, 'c']]) }).should.equal('0,1,2');
+        });
 
         it('should handle undefined', function () {
             const testTemplate = twig({data: '{{ undef|keys }}'});
@@ -218,6 +232,10 @@ describe('Twig.js Filters ->', function () {
         it('should join all values in an object', function () {
             const testTemplate = twig({data: '{{ {"a":"1", "b": "b", "c":test}|join("-") }}'});
             testTemplate.render({test: 't'}).should.equal('1-b-t');
+        });       
+        it('should join all values in a Map', function () {
+            const testTemplate = twig({data: '{{ test|join("-") }}'});
+            testTemplate.render({test: new Map([['a', 1],[7, 'b'],['c', 3]])}).should.equal('1-b-3');
         });
         it('should joing all values in an array', function () {
             let testTemplate = twig({data: '{{ [1,2,4,76]|join }}'});

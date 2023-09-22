@@ -127,6 +127,10 @@ module.exports = function (Twig) {
                 return;
             }
 
+            if (Twig.lib.is('Map', value)) {
+                return Array.from(value.keys());
+            }
+
             const keyset = value._keys || Object.keys(value);
             const output = [];
 
@@ -192,7 +196,11 @@ module.exports = function (Twig) {
 
             if (is('Array', value)) {
                 output = value;
-            } else {
+            }
+            else if (Twig.lib.is('Map', value)) {
+                output = Array.from(value.values());
+            }
+            else {
                 keyset = value._keys || Object.keys(value);
                 keyset.forEach(key => {
                     if (key === '_keys') {
@@ -242,7 +250,19 @@ module.exports = function (Twig) {
                 return '"' + value.toISOString() + '"';
             }
 
-            if (typeof value === 'object') {
+            if (Twig.lib.is('Map', value)) {
+                // JSON.stringifying a Map just yields an empty object. But in PHP json_encoding an Ds\Map yields an object :)
+                const keyset = Array.from(value.keys());
+                const output = [];
+
+                keyset.forEach(key => {
+                    output.push(JSON.stringify(key) + ':' + Twig.filters.json_encode(value.get(key)));
+                });
+
+                return '{' + output.join(',') + '}';
+            }
+
+            if (typeof value === 'object') { 
                 const keyset = value._keys || Object.keys(value);
                 const output = [];
 

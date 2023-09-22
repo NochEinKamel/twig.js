@@ -960,8 +960,7 @@ module.exports = function (Twig) {
                         // Get the variable from the context
                         if (object instanceof Map) {
                             value = object.get(key);
-                        }
-                        else if (typeof object === 'object' && key in object) {
+                        } else if (typeof object === 'object' && key in object) {
                             value = object[key];
                         } else {
                             value = null;

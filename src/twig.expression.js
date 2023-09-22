@@ -892,7 +892,9 @@ module.exports = function (Twig) {
                             };
 
                             // Get the variable from the context
-                            if (typeof object === 'object' && key in object) {
+                            if (object instanceof Map) {
+                                value = object.get(key);
+                            } else if (typeof object === 'object' && key in object) {
                                 value = object[key];
                             } else if (object['get' + capitalize(key)]) {
                                 value = object['get' + capitalize(key)];
@@ -956,7 +958,10 @@ module.exports = function (Twig) {
                         }
 
                         // Get the variable from the context
-                        if (typeof object === 'object' && key in object) {
+                        if (object instanceof Map) {
+                            value = object.get(key);
+                        }
+                        else if (typeof object === 'object' && key in object) {
                             value = object[key];
                         } else {
                             value = null;

@@ -337,6 +337,104 @@ describe('Twig.js Core ->', function () {
         });
     });
 
+    describe('Key Notation for Maps ->', function () {
+        it('should support dot key notation', function () {
+            twig({data: '{{ key.value }} {{ key.sub.test }}'}).render({
+                key: new Map([
+                    ['value', 'test'],
+                    ['sub', {
+                        test: 'value'
+                    }]
+                ])
+            }).should.equal('test value');
+
+            twig({data: '{{ key.value }} {{ key.sub.test }}'}).render({
+                key: new Map([
+                    ['value', 'test'],
+                    ['sub', new Map([['test', 'map']])]
+                ])
+            }).should.equal('test map');
+        });
+        /*
+        dot-notation cannot support number keys as we cannot distinguish between a key of type number and string.
+        Also a Map may very well have both the number 5 and the string '5' as keys.
+        it('should support dot key notation with numbers', function () {
+            twig({data: '{{ key.1 }} {{ key.2.3 }}'}).render({
+                key: new Map([
+                    [1, 'test'],
+                    [2, new Map([[3, 'three']])]
+                ])
+            }).should.equal('test three');
+        });
+        */
+        it('should support square bracket key notation', function () {
+            twig({data: '{{ key["value"] }} {{ key[\'sub\']["test"] }}'}).render({
+                key: new Map([
+                    ['value', 'test'],
+                    ['sub', {
+                        test: 'value'
+                    }]
+                ])
+            }).should.equal('test value');
+        });
+        it('should support square bracket key notation with numbers including floats', function () {
+            /* Good luck with IEEE 754 though :-) */
+            twig({data: '{{ key[1] }} {{ key[2.5][3] }}'}).render({
+                key: new Map([
+                    [1, 'test'],
+                    [2.5, new Map([[3, 'three']])]
+                ])
+            }).should.equal('test three');
+        });
+        it('should support mixed dot and bracket key notation', function () {
+            twig({data: '{{ key["value"] }} {{ key.sub[key.value] }} {{ s.t["u"].v["w"] }}'}).render({
+                key: new Map([
+                    ['value', 'test'],
+                    ['sub', {
+                        test: 'value'
+                    }]
+                ]),
+                s: new Map().set('t', new Map().set('u', new Map().set('v', new Map().set('w','x'))))
+            }).should.equal('test value x');
+        });
+
+        it('should support dot key notation after a function', function () {
+            const testTemplate = twig({data: '{{ key.fn().value }}'});
+            const output = testTemplate.render({
+                key: {
+                    fn() {
+                        return new Map([['value', 'test']]);
+                    }
+                }
+            });
+            output.should.equal('test');
+        });
+
+        it('should support bracket key notation after a function', function () {
+            const testTemplate = twig({data: '{{ key.fn()["value"] }}'});
+            const output = testTemplate.render({
+                key: {
+                    fn() {
+                        return new Map([['value', 'test 2']]);
+                    }
+                }
+            });
+            output.should.equal('test 2');
+        });
+
+        it('should return null if a period key doesn\'t exist.', function () {
+            twig({data: '{{ obj.value == null }}'}).render({
+                obj: new Map([['not', 'found']])
+            }).should.equal('true');
+        });
+
+        it('should return null if a bracket key doesn\'t exist.', function () {
+            twig({data: '{{ obj["value"] == null }}'}).render({
+                obj: new Map([['not', 'found']])
+            }).should.equal('true');
+        });
+    });
+
     describe('Context ->', function () {
         it('should be supported', function () {
             twig({data: '{{ _context.value }}'}).render({

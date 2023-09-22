@@ -327,8 +327,15 @@ module.exports = function (Twig) {
                                 return loop(key, value);
                             });
                         }
-
-                        if (Twig.lib.is('Object', result)) {
+                        else if (Twig.lib.is('Map', result)) {
+                            keyset = Array.from(result.keys());
+                            
+                            len = keyset.length;
+                            return Twig.async.forEach(keyset, key => {
+                                return loop(key, result.get(key));
+                            });
+                        }
+                        else if (Twig.lib.is('Object', result)) {
                             if (result._keys === undefined) {
                                 keyset = Object.keys(result);
                             } else {

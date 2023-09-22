@@ -47,6 +47,7 @@ describe('Twig.js Control Structures ->', function () {
             testTemplate.render({test: [], other: true}).should.equal('other_true');
             testTemplate.render({test: null, other: true}).should.equal('other_true');
             testTemplate.render({test: undefined, other: true}).should.equal('other_true');
+            // TODO testTemplate.render({test: new Map(), other: true}).should.equal('other_true');
         });
     });
 
@@ -85,10 +86,25 @@ describe('Twig.js Control Structures ->', function () {
             testTemplate.render({test: [1, 2, 3, 4]}).should.equal('1234');
             testTemplate.render({test: []}).should.equal('else');
         });
+        it('should provide value only for Map input', function () {
+            const testTemplate = twig({data: '{% for value in test %}{{ value }}{% endfor %}'});
+            testTemplate.render({test: new Map([['one', 1],['two', 2],['three', 3]])}).should.equal('123');
+            testTemplate.render({test: new Map()}).should.equal('');
+        });
+        it('should provide both key and value for Map input', function () {
+            const testTemplate = twig({data: '{% for key, value in test %}{{key}}:{{ value }}{% endfor %}'});
+            testTemplate.render({test: new Map([['one', 1],['two', 2],['three', 3]])}).should.equal('one:1two:2three:3');
+            testTemplate.render({test: new Map()}).should.equal('');
+        });
         it('should be able to nest', function () {
             const testTemplate = twig({data: '{% for key,list in test %}{% for val in list %}{{ val }}{%endfor %}.{% else %}else{% endfor %}'});
             testTemplate.render({test: [[1, 2], [3, 4], [5, 6]]}).should.equal('12.34.56.');
             testTemplate.render({test: []}).should.equal('else');
+        });
+        it('should be able to nest Maps', function () {
+            const testTemplate = twig({data: '{% for key,list in test %}{% for val in list %}{{ val }}{%endfor %}.{% else %}else{% endfor %}'});
+            testTemplate.render({test: new Map([['onetwo', new Map([['one', 1],['two', 2]])],['threefour', new Map([['three', 3],['four', 4]])],['fivesix', new Map([['five', 5],['six', 6]])]])}).should.equal('12.34.56.');
+            testTemplate.render({test: new Map()}).should.equal('else');
         });
         it('should have a loop context item available for arrays', function () {
             let testTemplate = twig({data: '{% for key,value in test %}{{ loop.index }}{% endfor %}'});
@@ -126,6 +142,23 @@ describe('Twig.js Control Structures ->', function () {
             const testTemplate = twig({data: '{% for value in test %}{% for value in inner %}({{ loop.parent.loop.index }},{{ loop.index }}){% endfor %}{% endfor %}'});
             testTemplate.render({test: {a: 1, b: 2}, inner: [1, 2, 3]}).should.equal('(1,1)(1,2)(1,3)(2,1)(2,2)(2,3)');
         });
+        
+        it('should have a loop context item available for Maps', function () {
+            let testTemplate = twig({data: '{% for key,value in test %}{{ loop.index }}{% endfor %}'});
+            testTemplate.render({test: new Map([['a', 1],['b',2],['c',3],['d',4]])}).should.equal('1234');
+            testTemplate = twig({data: '{% for key,value in test %}{{ loop.index0 }}{% endfor %}'});
+            testTemplate.render({test: new Map([['a', 1],['b',2],['c',3],['d',4]])}).should.equal('0123');
+            testTemplate = twig({data: '{% for key,value in test %}{{ loop.revindex }}{% endfor %}'});
+            testTemplate.render({test: new Map([['a', 1],['b',2],['c',3],['d',4]])}).should.equal('4321');
+            testTemplate = twig({data: '{% for key,value in test %}{{ loop.revindex0 }}{% endfor %}'});
+            testTemplate.render({test: new Map([['a', 1],['b',2],['c',3],['d',4]])}).should.equal('3210');
+            testTemplate = twig({data: '{% for key,value in test %}{{ loop.length }}{% endfor %}'});
+            testTemplate.render({test: new Map([['a', 1],['b',2],['c',3],['d',4]])}).should.equal('4444');
+            testTemplate = twig({data: '{% for key,value in test %}{{ loop.first }}{% endfor %}'});
+            testTemplate.render({test: new Map([['a', 1],['b',2],['c',3],['d',4]])}).should.equal('truefalsefalsefalse');
+            testTemplate = twig({data: '{% for key,value in test %}{{ loop.last }}{% endfor %}'});
+            testTemplate.render({test: new Map([['a', 1],['b',2],['c',3],['d',4]])}).should.equal('falsefalsefalsetrue');
+        });
 
         it('should support conditionals on for loops', function () {
             let testTemplate = twig({data: '{% for value in test if false %}{{ value }},{% endfor %}'});
@@ -142,6 +175,12 @@ describe('Twig.js Control Structures ->', function () {
                 a: {show: true, value: 'one'},
                 b: {show: false, value: 'two'},
                 c: {show: true, value: 'three'}}}).should.equal('a:one,c:three,');
+
+            testTemplate = twig({data: '{% for key,item in test if item.show %}{{key}}:{{ item.value }},{% endfor %}'});
+            testTemplate.render({test: new Map([
+                ['a', {show: true, value: 'one'}],
+                ['b', {show: false, value: 'two'}],
+                ['c', {show: true, value: 'three'}]]) }).should.equal('a:one,c:three,');
         });
     });
 

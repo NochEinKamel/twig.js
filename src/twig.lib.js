@@ -38,6 +38,8 @@ module.exports = function (Twig) {
                 return (typeof obj === 'function');
             case 'Object':
                 return obj instanceof Object;
+            case 'Map':
+                return obj instanceof Map;
             default:
                 return false;
         }

@@ -132,6 +132,10 @@ describe('Twig.js Filters ->', function () {
             const testTemplate = twig({data: '{{ {"a": "b", "c": "1", "test": "test"}|length }}'});
             testTemplate.render().should.equal('3');
         });
+        it('should determine the length of a Map', function () {
+            const testTemplate = twig({data: '{{ test|length }}'});
+            testTemplate.render({ test: new Map([['a','b'],['c','d'],['e','f']]) }).should.equal('3');
+        });
 
         it('should handle undefined', function () {
             const testTemplate = twig({data: '{{ undef|length }}'});

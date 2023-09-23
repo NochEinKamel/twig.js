@@ -45,6 +45,9 @@ module.exports = function (Twig) {
                 return value.length;
             }
 
+            if (Twig.lib.is('Map', value)) {
+                return value.size;
+            }
             if (Twig.lib.is('Object', value)) {
                 if (value._keys === undefined) {
                     return Object.keys(value).length;

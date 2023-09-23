@@ -327,7 +327,7 @@ module.exports = function (Twig) {
                                 return loop(key, value);
                             });
                         }
-                        
+
                         if (Twig.lib.is('Map', result)) {
                             keyset = [...result.keys()];
                             len = keyset.length;

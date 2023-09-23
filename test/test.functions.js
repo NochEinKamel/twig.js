@@ -204,6 +204,20 @@ describe('Twig.js Functions ->', function () {
             it('should output formatted array', function () {
                 twig({data: '{{ dump(test) }}'}).render({test: []}).should.equal('object(0) {' + EOL + '}' + EOL);
             });
+            it('should output formatted Map', function () {
+                twig({data: '{{ dump(test) }}'}).render({test: new Map()}).should.equal('Map(0) {' + EOL + '}' + EOL);
+            });
+            it('should output formatted Map with content', function () {
+                twig({data: '{{ dump(test) }}'}).render({test: new Map([['a',1],[2,'b']])}).should.equal(
+`Map(2) {
+  [a]=> 
+  number(1)
+  [2]=> 
+  string(1) "b"
+}
+`
+                    );
+            });
             it('should output formatted undefined', function () {
                 twig({data: '{{ dump(test) }}'}).render({test: undefined}).should.equal('undefined' + EOL);
             });

@@ -102,6 +102,17 @@ module.exports = function (Twig) {
                     out += 'NULL' + EOL;
                 } else if (variable === undefined) {
                     out += 'undefined' + EOL;
+                } else if (variable instanceof Map) {
+                    out += indent(indentTimes) + 'Map';
+                    indentTimes++;
+                    out += '(' + variable.size + ') {' + EOL;
+                    for (const [key, value] of variable) {
+                        out += indent(indentTimes) + '[' + key + ']=> ' + EOL;
+                        displayVar(value);
+                    }
+
+                    indentTimes--;
+                    out += indent(indentTimes) + '}' + EOL;
                 } else if (typeof variable === 'object') {
                     out += indent(indentTimes) + typeof (variable);
                     indentTimes++;
